@@ -8,7 +8,7 @@
 ## 目次
 
 - [DevelopmentEnviroment](#developmentenviroment)
-- [directory](#directory)
+- [Directory](#Directory)
 
 
 --------
