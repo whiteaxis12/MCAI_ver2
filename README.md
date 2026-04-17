@@ -66,7 +66,7 @@ pip install mediapipe opencv-python open3d
 
 
 ```
-vertex3d/
+
 │
 ├── 📁 data/                    # 入力データ
 │   ├── images/                 # 入力画像
@@ -78,11 +78,11 @@ vertex3d/
 ├── 📁 models/                  # 学習済みモデルの重み
 │   └── .gitkeep
 │
-├── 📁 src/                     # メインソースコード
-│   ├── __init__.py
-│   ├── detector.py             # 3D頂点検出のメインロジック
-│   ├── visualizer.py           # 3D可視化
-│   └── exporter.py             # 結果の保存・エクスポート
+├── 📁 src/
+│   ├── detector.py       # MediaPipeで3D骨格取得
+│   ├── converter.py      # 骨格データ → BVH変換
+    ├── visualizer.py     # 確認用可視化
+    └── exporter.py       # BVH/FBXファイル出力
 │
 ├── 📁 notebooks/               # Jupyter Notebook（実験・検証用）
 │   └── 01_prototype.ipynb
