@@ -64,6 +64,7 @@ pip install mediapipe opencv-python open3d
 
 # Directory
 
+- ざっくりこんな感じで作っていく
 
 ```
 
