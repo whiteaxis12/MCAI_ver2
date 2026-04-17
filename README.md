@@ -3,9 +3,12 @@
 ※自作AIです。完成まではpythonで作成、スピードを要するならC++に順次移行
 - マーカーレスモーションキャプチャーのAIを作成
 
+
+
 ## 目次
 
 - [DevelopmentEnviroment](#developmentenviroment)
+- [directory](#directory)
 
 
 --------
@@ -40,4 +43,58 @@ conda install pytorch torchvision torchaudio pytorch-cuda=12.4 -c pytorch -c nvi
 
 pip install mediapipe opencv-python open3d
 ```
-[def]: #目次
+
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# Directory
+
+
+```
+vertex3d/
+│
+├── 📁 data/                    # 入力データ
+│   ├── images/                 # 入力画像
+│   ├── videos/                 # 入力動画
+│   └── outputs/                # 出力結果
+│       ├── landmarks/          # 3D頂点データ（JSON/CSV）
+│       └── visualizations/     # 可視化画像・動画
+│
+├── 📁 models/                  # 学習済みモデルの重み
+│   └── .gitkeep
+│
+├── 📁 src/                     # メインソースコード
+│   ├── __init__.py
+│   ├── detector.py             # 3D頂点検出のメインロジック
+│   ├── visualizer.py           # 3D可視化
+│   └── exporter.py             # 結果の保存・エクスポート
+│
+├── 📁 notebooks/               # Jupyter Notebook（実験・検証用）
+│   └── 01_prototype.ipynb
+│
+├── 📁 tests/                   # テストコード
+│   └── test_detector.py
+│
+├── 📁 config/                  # 設定ファイル
+│   └── settings.yaml           # パラメータ設定
+│
+├── main.py                     # エントリーポイント
+├── requirements.txt            # pip用ライブラリリスト
+├── environment.yml             # conda環境ファイル
+└── README.md                   # プロジェクト説明
+```
