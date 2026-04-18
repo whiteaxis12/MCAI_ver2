@@ -15,10 +15,16 @@
     - FBX読み込み→不可
     - blender経由、FBX読み込み→可
   - スケール適用、リターゲット
+  - VBHからFBX変換
+  - いったん完了
 
 ## 課題
-- FBX読み込み、吐出しの強化(blenderを参考に)
-- MotionCaptureの機械学習
+- 最重要
+  - VBHの位置のmappingの挙動
+
+- 時間あれば
+  - FBX読み込み、吐出しの強化(blenderを参考に)
+  - MotionCaptureの機械学習
 
 
 ## 目次

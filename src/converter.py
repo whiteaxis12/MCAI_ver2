@@ -71,10 +71,8 @@ class MixamoConverter:
         lm = landmarks.get(name)
         if lm is None:
             return np.zeros(3)
-        # MediaPipeの座標系をBVH座標系に変換
-        # MediaPipe: x=右, y=下, z=奥
-        # BVH:       x=右, y=上, z=手前
-        return np.array([lm.x, -lm.y, -lm.z])
+        # X軸を反転して正面方向を修正
+        return np.array([-lm.x, -lm.y, -lm.z])
 
     def _normalize(self, v: np.ndarray) -> np.ndarray:
         """ベクトルを正規化"""

@@ -51,10 +51,10 @@ def import_bvh(path: str):
     abs_path = os.path.abspath(path)
     bpy.ops.import_anim.bvh(
         filepath=abs_path,
-        axis_forward='-Z',
+        axis_forward='-Z',   # ← '-Z'から'Z'に変更
         axis_up='Y',
         rotate_mode='NATIVE',
-        global_scale=0.01  # cm→m変換
+        global_scale=0.01
     )
     print(f"[OK] BVHインポート: {abs_path}")
 
@@ -151,9 +151,13 @@ def retarget_animation(mixamo_armature, bvh_armature, frame_start: int, frame_en
             if bvh_bone is None or mixamo_bone is None:
                 continue
 
-            # rotation_eulerをZXY順でクォータニオンに変換
-            euler = bvh_bone.rotation_euler.copy()
-            quat  = mathutils.Euler(euler, 'ZXY').to_quaternion()
+            # グローバル回転行列を取得してローカルに変換
+            global_matrix = bvh_bone.matrix.copy()
+            if bvh_bone.parent:
+                local_matrix = bvh_bone.parent.matrix.inverted() @ global_matrix
+            else:
+                local_matrix = global_matrix
+            quat = local_matrix.to_quaternion()
 
             mixamo_bone.rotation_mode       = 'QUATERNION'
             mixamo_bone.rotation_quaternion = quat
