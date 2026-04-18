@@ -151,7 +151,7 @@ conda install -c conda-forge assimp
 
 
 - MotionCuptureImage
-<img src="data/caputure_Image.png" alt="sampleimage" width="750">
+<img src="data/misc/caputure_Image.png" alt="sampleimage" width="750">
 
 - MotionCaptureMovie
-<img src="data/moviePosition.gif" alt="sampleimage" width="750">
+<img src="data/misc/moviePosition.gif" alt="sampleimage" width="750">
