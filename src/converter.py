@@ -5,31 +5,39 @@ class MixamoConverter:
     """MediaPipe骨格座標 → Mixamoボーン回転角に変換"""
 
     BONE_MAPPING = {
-        "Hips":          ("LEFT_HIP",       "RIGHT_HIP"),
-        "Spine":         ("LEFT_HIP",       "LEFT_SHOULDER"),
-        "Spine1":        ("LEFT_HIP",       "LEFT_SHOULDER"),
-        "Spine2":        ("LEFT_SHOULDER",  "RIGHT_SHOULDER"),
-        "Neck":          ("LEFT_SHOULDER",  "NOSE"),
-        "Head":          ("NOSE",           "LEFT_EAR"),
+    # Hipsは左右の中点方向
+    "Hips":          ("LEFT_HIP",       "RIGHT_HIP"),
 
-        "LeftArm":       ("LEFT_SHOULDER",  "LEFT_ELBOW"),
-        "LeftForeArm":   ("LEFT_ELBOW",     "LEFT_WRIST"),
-        "LeftHand":      ("LEFT_WRIST",     "LEFT_INDEX"),
+    # Spineは腰中点→肩中点（真上方向）
+    "Spine":         ("LEFT_HIP",       "LEFT_SHOULDER"),
+    "Spine1":        ("LEFT_HIP",       "LEFT_SHOULDER"),
+    "Spine2":        ("LEFT_HIP",       "LEFT_SHOULDER"),
 
-        "RightArm":      ("RIGHT_SHOULDER", "RIGHT_ELBOW"),
-        "RightForeArm":  ("RIGHT_ELBOW",    "RIGHT_WRIST"),
-        "RightHand":     ("RIGHT_WRIST",    "RIGHT_INDEX"),
+    # Neckは肩中点→耳中点
+    "Neck":          ("LEFT_SHOULDER",  "LEFT_EAR"),
+    # Headは耳→鼻
+    "Head":          ("LEFT_EAR",       "NOSE"),
 
-        "LeftUpLeg":     ("LEFT_HIP",       "LEFT_KNEE"),
-        "LeftLeg":       ("LEFT_KNEE",      "LEFT_ANKLE"),
-        "LeftFoot":      ("LEFT_ANKLE",     "LEFT_HEEL"),
-        "LeftToeBase":   ("LEFT_HEEL",      "LEFT_FOOT_INDEX"),
+    # 腕：肩→肘→手首
+    "LeftArm":       ("LEFT_SHOULDER",  "LEFT_ELBOW"),
+    "LeftForeArm":   ("LEFT_ELBOW",     "LEFT_WRIST"),
+    "LeftHand":      ("LEFT_WRIST",     "LEFT_INDEX"),
 
-        "RightUpLeg":    ("RIGHT_HIP",      "RIGHT_KNEE"),
-        "RightLeg":      ("RIGHT_KNEE",     "RIGHT_ANKLE"),
-        "RightFoot":     ("RIGHT_ANKLE",    "RIGHT_HEEL"),
-        "RightToeBase":  ("RIGHT_HEEL",     "RIGHT_FOOT_INDEX"),
-    }
+    "RightArm":      ("RIGHT_SHOULDER", "RIGHT_ELBOW"),
+    "RightForeArm":  ("RIGHT_ELBOW",    "RIGHT_WRIST"),
+    "RightHand":     ("RIGHT_WRIST",    "RIGHT_INDEX"),
+
+    # 脚：腰→膝→足首
+    "LeftUpLeg":     ("LEFT_HIP",       "LEFT_KNEE"),
+    "LeftLeg":       ("LEFT_KNEE",      "LEFT_ANKLE"),
+    "LeftFoot":      ("LEFT_ANKLE",     "LEFT_HEEL"),
+    "LeftToeBase":   ("LEFT_HEEL",      "LEFT_FOOT_INDEX"),
+
+    "RightUpLeg":    ("RIGHT_HIP",      "RIGHT_KNEE"),
+    "RightLeg":      ("RIGHT_KNEE",     "RIGHT_ANKLE"),
+    "RightFoot":     ("RIGHT_ANKLE",    "RIGHT_HEEL"),
+    "RightToeBase":  ("RIGHT_HEEL",     "RIGHT_FOOT_INDEX"),
+}
 
     # ボーンの位置基準点（中点 or 単点）
     BONE_POSITIONS = {
@@ -56,32 +64,32 @@ class MixamoConverter:
     }
 
     BIND_POSE = {
-        "Hips":          np.array([1,  0,  0]),
-        "Spine":         np.array([0,  1,  0]),
-        "Spine1":        np.array([0,  1,  0]),
-        "Spine2":        np.array([0,  1,  0]),
-        "Neck":          np.array([0,  1,  0]),
-        "Head":          np.array([0,  1,  0]),
+    "Hips":          np.array([-1,  0,  0]),  # 右→左方向
+    "Spine":         np.array([ 0,  1,  0]),  # 上方向
+    "Spine1":        np.array([ 0,  1,  0]),
+    "Spine2":        np.array([ 0,  1,  0]),
+    "Neck":          np.array([ 0,  1,  0]),
+    "Head":          np.array([ 0,  1,  0]),
 
-        "LeftArm":       np.array([1,  0,  0]),
-        "LeftForeArm":   np.array([1,  0,  0]),
-        "LeftHand":      np.array([1,  0,  0]),
+    "LeftArm":       np.array([-1,  0,  0]),  # 左方向
+    "LeftForeArm":   np.array([-1,  0,  0]),
+    "LeftHand":      np.array([-1,  0,  0]),
 
-        "RightArm":      np.array([-1, 0,  0]),
-        "RightForeArm":  np.array([-1, 0,  0]),
-        "RightHand":     np.array([-1, 0,  0]),
+    "RightArm":      np.array([ 1,  0,  0]),  # 右方向
+    "RightForeArm":  np.array([ 1,  0,  0]),
+    "RightHand":     np.array([ 1,  0,  0]),
 
-        "LeftUpLeg":     np.array([0, -1,  0]),
-        "LeftLeg":       np.array([0, -1,  0]),
-        "LeftFoot":      np.array([0, -1,  0]),
-        "LeftToeBase":   np.array([0,  0,  1]),
+    "LeftUpLeg":     np.array([ 0, -1,  0]),  # 下方向
+    "LeftLeg":       np.array([ 0, -1,  0]),
+    "LeftFoot":      np.array([ 0, -1,  0]),
+    "LeftToeBase":   np.array([ 0,  0,  1]),
 
-        "RightUpLeg":    np.array([0, -1,  0]),
-        "RightLeg":      np.array([0, -1,  0]),
-        "RightFoot":     np.array([0, -1,  0]),
-        "RightToeBase":  np.array([0,  0,  1]),
-    }
-
+    "RightUpLeg":    np.array([ 0, -1,  0]),
+    "RightLeg":      np.array([ 0, -1,  0]),
+    "RightFoot":     np.array([ 0, -1,  0]),
+    "RightToeBase":  np.array([ 0,  0,  1]),
+}
+    
     CONFIDENCE_THRESHOLD = 0.3
 
     def __init__(self):
