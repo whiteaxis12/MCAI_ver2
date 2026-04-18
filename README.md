@@ -13,6 +13,7 @@
 
 - [DevelopmentEnviroment](#developmentenviroment)
 - [Directory](#Directory)
+- [HowTo](#HowTo)
 
 
 --------
@@ -104,3 +105,30 @@ pip install mediapipe==0.10.14
 ├── environment.yml             # conda環境ファイル
 └── README.md                   # プロジェクト説明
 ```
+
+------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# HowTo
+
+- 作成途中
+
+
+- MotionCuptureImage
+<img src="Date/caputure_Image.png" width="750>"
