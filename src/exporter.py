@@ -4,89 +4,145 @@ from datetime import datetime
 class BVHExporter:
     """MixamoボーンデータをBVH形式で出力"""
 
-    # BVHのボーン階層定義（Mixamo標準）
-    HIERARCHY = [
-        ("Hips",        None,           [0, 0, 0]),
-        ("Spine",       "Hips",         [0, 10, 0]),
-        ("Spine1",      "Spine",        [0, 10, 0]),
-        ("Spine2",      "Spine1",       [0, 10, 0]),
-        ("Neck",        "Spine2",       [0, 10, 0]),
-        ("Head",        "Neck",         [0, 10, 0]),
-
-        ("LeftArm",     "Spine2",       [10, 0, 0]),
-        ("LeftForeArm", "LeftArm",      [20, 0, 0]),
-        ("LeftHand",    "LeftForeArm",  [20, 0, 0]),
-
-        ("RightArm",    "Spine2",       [-10, 0, 0]),
-        ("RightForeArm","RightArm",     [-20, 0, 0]),
-        ("RightHand",   "RightForeArm", [-20, 0, 0]),
-
-        ("LeftUpLeg",   "Hips",         [5, -10, 0]),
-        ("LeftLeg",     "LeftUpLeg",    [0, -20, 0]),
-        ("LeftFoot",    "LeftLeg",      [0, -20, 0]),
-        ("LeftToeBase", "LeftFoot",     [0, -5,  5]),
-
-        ("RightUpLeg",  "Hips",         [-5, -10, 0]),
-        ("RightLeg",    "RightUpLeg",   [0, -20, 0]),
-        ("RightFoot",   "RightLeg",     [0, -20, 0]),
-        ("RightToeBase","RightFoot",    [0, -5,  5]),
-    ]
-
-    # 信頼度がこの値以下のボーンはデフォルト回転を使用
     CONFIDENCE_THRESHOLD = 0.3
+
+    # モーションデータのボーン順序（HIERARCHYと完全一致）
+    MOTION_ORDER = [
+        "Hips",
+        "Spine", "Spine1", "Spine2",
+        "Neck", "Head",
+        "LeftArm", "LeftForeArm", "LeftHand",
+        "RightArm", "RightForeArm", "RightHand",
+        "LeftUpLeg", "LeftLeg", "LeftFoot", "LeftToeBase",
+        "RightUpLeg", "RightLeg", "RightFoot", "RightToeBase",
+    ]
 
     def __init__(self, frame_rate: int = 30):
         self.frame_rate = frame_rate
 
     def _build_hierarchy_text(self) -> str:
-        """BVHのHIERARCHYセクションを生成"""
-        lines = ["HIERARCHY"]
-        indent = ""
-        stack = []
-
-        for bone_name, parent, offset in self.HIERARCHY:
-            # ルートボーン
-            if parent is None:
-                lines.append(f"ROOT {bone_name}")
-                lines.append("{")
-                indent = "\t"
-            else:
-                # 親が変わったらEnd Siteと閉じ括弧を処理
-                while stack and stack[-1] != parent:
-                    closed = stack.pop()
-                    indent = "\t" * len(stack)
-                    # End Site追加
-                    lines.append(f"{indent}\tEnd Site")
-                    lines.append(f"{indent}\t{{")
-                    lines.append(f"{indent}\t\tOFFSET 0.00 0.00 0.00")
-                    lines.append(f"{indent}\t}}")
-                    lines.append(f"{indent}}}")
-
-                indent = "\t" * (len(stack) + 1)
-                lines.append(f"{indent}JOINT {bone_name}")
-                lines.append(f"{indent}{{")
-                indent += "\t"
-
-            lines.append(f"{indent}OFFSET {offset[0]:.2f} {offset[1]:.2f} {offset[2]:.2f}")
-
-            if parent is None:
-                lines.append(f"{indent}CHANNELS 6 Xposition Yposition Zposition Zrotation Xrotation Yrotation")
-            else:
-                lines.append(f"{indent}CHANNELS 3 Zrotation Xrotation Yrotation")
-
-            stack.append(bone_name)
-
-        # 残りのEnd Siteと閉じ括弧
-        while stack:
-            indent = "\t" * (len(stack) - 1)
-            lines.append(f"{indent}\tEnd Site")
-            lines.append(f"{indent}\t{{")
-            lines.append(f"{indent}\t\tOFFSET 0.00 0.00 0.00")
-            lines.append(f"{indent}\t}}")
-            lines.append(f"{indent}}}")
-            stack.pop()
-
-        return "\n".join(lines)
+        """BVHのHIERARCHYセクションを生成（ハードコード）"""
+        return """HIERARCHY
+ROOT Hips
+{
+\tOFFSET 0.00 0.00 0.00
+\tCHANNELS 6 Xposition Yposition Zposition Zrotation Xrotation Yrotation
+\tJOINT Spine
+\t{
+\t\tOFFSET 0.00 10.00 0.00
+\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\tJOINT Spine1
+\t\t{
+\t\t\tOFFSET 0.00 10.00 0.00
+\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\tJOINT Spine2
+\t\t\t{
+\t\t\t\tOFFSET 0.00 10.00 0.00
+\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\t\tJOINT Neck
+\t\t\t\t{
+\t\t\t\t\tOFFSET 0.00 10.00 0.00
+\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\t\t\tJOINT Head
+\t\t\t\t\t{
+\t\t\t\t\t\tOFFSET 0.00 10.00 0.00
+\t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\t\t\t\tEnd Site
+\t\t\t\t\t\t{
+\t\t\t\t\t\t\tOFFSET 0.00 10.00 0.00
+\t\t\t\t\t\t}
+\t\t\t\t\t}
+\t\t\t\t}
+\t\t\t\tJOINT LeftArm
+\t\t\t\t{
+\t\t\t\t\tOFFSET 15.00 0.00 0.00
+\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\t\t\tJOINT LeftForeArm
+\t\t\t\t\t{
+\t\t\t\t\t\tOFFSET 25.00 0.00 0.00
+\t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\t\t\t\tJOINT LeftHand
+\t\t\t\t\t\t{
+\t\t\t\t\t\t\tOFFSET 20.00 0.00 0.00
+\t\t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\t\t\t\t\tEnd Site
+\t\t\t\t\t\t\t{
+\t\t\t\t\t\t\t\tOFFSET 10.00 0.00 0.00
+\t\t\t\t\t\t\t}
+\t\t\t\t\t\t}
+\t\t\t\t\t}
+\t\t\t\t}
+\t\t\t\tJOINT RightArm
+\t\t\t\t{
+\t\t\t\t\tOFFSET -15.00 0.00 0.00
+\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\t\t\tJOINT RightForeArm
+\t\t\t\t\t{
+\t\t\t\t\t\tOFFSET -25.00 0.00 0.00
+\t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\t\t\t\tJOINT RightHand
+\t\t\t\t\t\t{
+\t\t\t\t\t\t\tOFFSET -20.00 0.00 0.00
+\t\t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\t\t\t\t\tEnd Site
+\t\t\t\t\t\t\t{
+\t\t\t\t\t\t\t\tOFFSET -10.00 0.00 0.00
+\t\t\t\t\t\t\t}
+\t\t\t\t\t\t}
+\t\t\t\t\t}
+\t\t\t\t}
+\t\t\t}
+\t\t}
+\t}
+\tJOINT LeftUpLeg
+\t{
+\t\tOFFSET 8.00 -15.00 0.00
+\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\tJOINT LeftLeg
+\t\t{
+\t\t\tOFFSET 0.00 -35.00 0.00
+\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\tJOINT LeftFoot
+\t\t\t{
+\t\t\t\tOFFSET 0.00 -35.00 0.00
+\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\t\tJOINT LeftToeBase
+\t\t\t\t{
+\t\t\t\t\tOFFSET 0.00 -5.00 10.00
+\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\t\t\tEnd Site
+\t\t\t\t\t{
+\t\t\t\t\t\tOFFSET 0.00 -5.00 10.00
+\t\t\t\t\t}
+\t\t\t\t}
+\t\t\t}
+\t\t}
+\t}
+\tJOINT RightUpLeg
+\t{
+\t\tOFFSET -8.00 -15.00 0.00
+\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\tJOINT RightLeg
+\t\t{
+\t\t\tOFFSET 0.00 -35.00 0.00
+\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\tJOINT RightFoot
+\t\t\t{
+\t\t\t\tOFFSET 0.00 -35.00 0.00
+\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\t\tJOINT RightToeBase
+\t\t\t\t{
+\t\t\t\t\tOFFSET 0.00 -5.00 10.00
+\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+\t\t\t\t\tEnd Site
+\t\t\t\t\t{
+\t\t\t\t\t\tOFFSET 0.00 -5.00 10.00
+\t\t\t\t\t}
+\t\t\t\t}
+\t\t\t}
+\t\t}
+\t}
+}"""
 
     def _build_motion_text(self, frames: list[dict]) -> str:
         """BVHのMOTIONセクションを生成"""
@@ -96,21 +152,18 @@ class BVHExporter:
 
         for frame_data in frames:
             values = []
-
-            for i, (bone_name, parent, _) in enumerate(self.HIERARCHY):
-                bone = frame_data.get(bone_name, {})
-                rotation = bone.get("rotation", [0, 0, 0])
+            for bone_name in self.MOTION_ORDER:
+                bone       = frame_data.get(bone_name, {})
+                rotation   = bone.get("rotation", [0, 0, 0])
                 confidence = bone.get("confidence", 0.0)
 
-                # 信頼度が低い場合はデフォルト値（0度）を使用
                 if confidence < self.CONFIDENCE_THRESHOLD:
                     rotation = [0, 0, 0]
 
-                if parent is None:
-                    # ルートボーンは位置+回転
+                if bone_name == "Hips":
                     position = bone.get("position", [0, 0, 0])
                     values.extend([
-                        position[0] * 100,  # メートル→センチ変換
+                        position[0] * 100,
                         position[1] * 100,
                         position[2] * 100,
                         rotation[2],  # Zrotation
@@ -129,12 +182,6 @@ class BVHExporter:
         return "\n".join(lines)
 
     def export(self, bone_data: dict, output_path: str, frames: list[dict] = None):
-        """
-        BVHファイルを出力
-        bone_data: converter.pyの出力
-        output_path: 出力先パス
-        frames: 複数フレームの場合のリスト（Noneなら1フレーム）
-        """
         if frames is None:
             frames = [bone_data]
 
@@ -148,4 +195,4 @@ class BVHExporter:
 
         print(f"[OK] BVHファイルを出力しました: {output_path}")
         print(f"     フレーム数: {len(frames)}")
-        print(f"     ボーン数:   {len(self.HIERARCHY)}")
+        print(f"     ボーン数:   {len(self.MOTION_ORDER)}")
