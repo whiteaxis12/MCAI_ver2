@@ -3,7 +3,10 @@ import os
 from src.detector import PoseDetector
 from src.converter import MixamoConverter
 from src.exporter import BVHExporter
+from src.fbx_reader import FBXReader
 
+
+        
 def process_image(image_path: str, output_path: str):
     """静止画処理"""
     detector  = PoseDetector(static_image_mode=True)

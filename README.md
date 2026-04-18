@@ -51,6 +51,9 @@ pip install mediapipe==0.10.14
 
 // リターゲットに必要なFBXを読み込む
 pip install pyassimp
+
+// assimp = 3Dモデル読み込みライブラリ,今のところ正常に動作しない。blender経由でのfbx読み込みを検討
+conda install -c conda-forge assimp
 ```
 
 ---
