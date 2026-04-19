@@ -55,12 +55,12 @@ class MixamoConverter:
     }
 
     BIND_POSE = {
-        "Hips":          np.array([ 1,  0,  0]),
-        "Spine":         np.array([ 0,  1,  0]),
-        "Spine1":        np.array([ 0,  1,  0]),
-        "Spine2":        np.array([ 0,  1,  0]),
-        "Neck":          np.array([ 0,  1,  0]),
-        "Head":          np.array([ 0,  1,  0]),
+        "Hips":          np.array([-1,     0,     0    ]),
+        "Spine":         np.array([ 0,     1,     0    ]),
+        "Spine1":        np.array([ 0,     1,     0    ]),
+        "Spine2":        np.array([ 0,     1,     0    ]),
+        "Neck":          np.array([ 0,     0.616, 0.782]),  # ← 実測値
+        "Head":          np.array([ 0.147, 0.041, 0.988]),  # ← 実測値
 
         "LeftArm":       np.array([-1,  0,  0]),
         "LeftForeArm":   np.array([-1,  0,  0]),
