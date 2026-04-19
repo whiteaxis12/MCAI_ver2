@@ -75,10 +75,36 @@ def get_frame_range(bvh_armature):
     frame_start = int(action.frame_range[0])
     frame_end   = int(action.frame_range[1])
     print(f"[OK] フレーム範囲: {frame_start} - {frame_end}")
-    return frame_start, frame_end
+    return max(frame_start + 1, 1), frame_end
+
+def debug_shoulder_rest(mixamo_armature):
+    """LeftShoulderのRestPoseの実際の行列を確認"""
+    print("\n=== LeftShoulder RestPose詳細 ===")
+    bone = mixamo_armature.data.bones.get("mixamorig:LeftShoulder")
+    if bone:
+        print(f"  head_local: {[round(v,3) for v in bone.head_local]}")
+        print(f"  tail_local: {[round(v,3) for v in bone.tail_local]}")
+        print(f"  matrix_local:\n{bone.matrix_local}")
+
+        if bone.parent:
+            local = bone.parent.matrix_local.inverted() @ bone.matrix_local
+            euler = local.to_euler('ZXY')
+            print(f"  親からの相対オイラー(ZXY): ({math.degrees(euler.x):.2f}, {math.degrees(euler.y):.2f}, {math.degrees(euler.z):.2f})")
+
+    print("\n=== LeftArm RestPose詳細 ===")
+    bone = mixamo_armature.data.bones.get("mixamorig:LeftArm")
+    if bone:
+        print(f"  head_local: {[round(v,3) for v in bone.head_local]}")
+        print(f"  tail_local: {[round(v,3) for v in bone.tail_local]}")
+        print(f"  matrix_local:\n{bone.matrix_local}")
+
+        if bone.parent:
+            local = bone.parent.matrix_local.inverted() @ bone.matrix_local
+            euler = local.to_euler('ZXY')
+            print(f"  親からの相対オイラー(ZXY): ({math.degrees(euler.x):.2f}, {math.degrees(euler.y):.2f}, {math.degrees(euler.z):.2f})")
 
 def retarget_animation(mixamo_armature, bvh_armature, frame_start: int, frame_end: int):
-    """BVHのアニメーションをMixamoリグに転写"""
+    """BVHのアニメーションをMixamoリグに転写（補正なし）"""
 
     BONE_MAP = {
         "Hips":          "mixamorig:Hips",
@@ -203,6 +229,7 @@ def main():
         return
 
     debug_rest_pose(mixamo_armature)
+    debug_shoulder_rest(mixamo_armature)
 
     bvh_armature = import_bvh(BVH_PATH)
     if bvh_armature is None:

@@ -194,8 +194,20 @@ class BVHExporter:
         if frames is None:
             frames = [bone_data]
 
+        # フレーム0にTポーズを挿入
+        tpose_frame = {}
+        for bone_name in self.MOTION_ORDER:
+            tpose_frame[bone_name] = {
+                "position":   [0, 0, 0],
+                "rotation":   [0, 0, 0],
+                "confidence": 1.0
+            }
+
+        # Tポーズ + 実際のアニメーション
+        all_frames = [tpose_frame] + frames
+
         hierarchy_text = self._build_hierarchy_text()
-        motion_text    = self._build_motion_text(frames)
+        motion_text    = self._build_motion_text(all_frames)
 
         bvh_content = hierarchy_text + "\n" + motion_text
 
@@ -203,5 +215,5 @@ class BVHExporter:
             f.write(bvh_content)
 
         print(f"[OK] BVHファイルを出力しました: {output_path}")
-        print(f"     フレーム数: {len(frames)}")
+        print(f"     フレーム数: {len(all_frames)} (Tポーズ1フレーム + アニメーション{len(frames)}フレーム)")
         print(f"     ボーン数:   {len(self.MOTION_ORDER)}")
