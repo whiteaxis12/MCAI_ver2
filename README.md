@@ -1,9 +1,7 @@
 # MCAI(MotionCaputureAI)
 
-※自作AIです。
-
 - モーションキャプチャー（マーカーレス）AI
-  - 画像や動画をinputして、指定のrigに位置情報をリターゲットして、Animation情報を出力
+  - 画像や動画をinputして、指定のrigに位置情報をリターゲットして、Animation情報を出力(FBX)
 
 ## 課題
   - FBX読み込み、吐出しの強化(blenderを参考に)
@@ -77,7 +75,7 @@ conda install -c conda-forge assimp
 
 # Directory
 
-```
+```bash
 
 │
 ├── 📁 data/                    # 入力データ
