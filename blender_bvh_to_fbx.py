@@ -9,6 +9,7 @@ BVHをFBXに変換してUE5用に出力
 
 import bpy
 import os
+import mathutils
 
 # ====================================
 # 設定欄 ← ここを編集してください
@@ -19,13 +20,11 @@ OUTPUT_FBX_PATH = "data/outputs/animation_output.fbx"
 # ====================================
 
 def clear_scene():
-    """シーンをクリア"""
     bpy.ops.object.select_all(action='SELECT')
     bpy.ops.object.delete()
     print("[OK] シーンをクリア")
 
 def import_mixamo_fbx(path: str):
-    """MixamoキャラクターFBXをインポート"""
     abs_path = os.path.abspath(path)
     bpy.ops.import_scene.fbx(filepath=abs_path)
     print(f"[OK] Mixamo FBXインポート: {abs_path}")
@@ -40,18 +39,13 @@ def import_mixamo_fbx(path: str):
         print("[ERROR] アーマチュアが見つかりません")
         return None
 
-    print("[INFO] Mixamoボーン一覧:")
-    for bone in armature.data.bones:
-        print(f"  {bone.name}")
-
     return armature
 
 def import_bvh(path: str):
-    """BVHをインポート"""
     abs_path = os.path.abspath(path)
     bpy.ops.import_anim.bvh(
         filepath=abs_path,
-        axis_forward='-Z',   # ← '-Z'から'Z'に変更
+        axis_forward='-Z',
         axis_up='Y',
         rotate_mode='NATIVE',
         global_scale=0.01
@@ -69,14 +63,9 @@ def import_bvh(path: str):
         return None
 
     print(f"[OK] BVHアーマチュア: {bvh_armature.name}")
-    print("[INFO] BVHボーン一覧:")
-    for bone in bvh_armature.data.bones:
-        print(f"  {bone.name}")
-
     return bvh_armature
 
 def get_frame_range(bvh_armature):
-    """BVHのフレーム範囲を取得"""
     if bvh_armature.animation_data is None:
         return 1, 1
     action = bvh_armature.animation_data.action
@@ -87,25 +76,8 @@ def get_frame_range(bvh_armature):
     print(f"[OK] フレーム範囲: {frame_start} - {frame_end}")
     return frame_start, frame_end
 
-def debug_bvh_animation(bvh_armature, frame_start, frame_end):
-    """BVHの回転値確認"""
-    print("\n=== BVHデバッグ ===")
-
-    for frame in [frame_start, frame_start + 30]:
-        bpy.context.scene.frame_set(frame)
-        bpy.context.view_layer.update()
-
-        print(f"\nフレーム {frame}:")
-        for bone in bvh_armature.pose.bones:
-            if bone.name in ["Hips", "Spine", "LeftArm"]:
-                print(f"  {bone.name}:")
-                print(f"    rotation_mode:    {bone.rotation_mode}")
-                print(f"    rotation_euler:   {bone.rotation_euler[:]}")
-                print(f"    rotation_quaternion: {bone.rotation_quaternion[:]}")
-
 def retarget_animation(mixamo_armature, bvh_armature, frame_start: int, frame_end: int):
     """BVHのアニメーションをMixamoリグに転写"""
-    import mathutils
 
     BONE_MAP = {
         "Hips":         "mixamorig:Hips",
@@ -140,6 +112,19 @@ def retarget_animation(mixamo_armature, bvh_armature, frame_start: int, frame_en
 
     print(f"\n[INFO] アニメーション転写開始: {frame_end - frame_start + 1}フレーム")
 
+    # フレーム1のデバッグ出力
+    bpy.context.scene.frame_set(frame_start)
+    bpy.context.view_layer.update()
+    print("\n=== フレーム1 転写確認 ===")
+    for bvh_name in ["Hips", "Spine", "LeftArm", "LeftUpLeg"]:
+        mixamo_name = BONE_MAP.get(bvh_name)
+        bvh_bone    = bvh_armature.pose.bones.get(bvh_name)
+        mixamo_bone = mixamo_armature.pose.bones.get(mixamo_name)
+        if bvh_bone and mixamo_bone:
+            euler = bvh_bone.rotation_euler.copy()
+            quat  = mathutils.Euler(euler, bvh_bone.rotation_mode).to_quaternion()
+            print(f"  {bvh_name}: euler={[round(v*57.3,2) for v in euler]} quat={[round(v,3) for v in quat]}")
+
     for frame in range(frame_start, frame_end + 1):
         bpy.context.scene.frame_set(frame)
         bpy.context.view_layer.update()
@@ -151,13 +136,9 @@ def retarget_animation(mixamo_armature, bvh_armature, frame_start: int, frame_en
             if bvh_bone is None or mixamo_bone is None:
                 continue
 
-            # グローバル回転行列を取得してローカルに変換
-            global_matrix = bvh_bone.matrix.copy()
-            if bvh_bone.parent:
-                local_matrix = bvh_bone.parent.matrix.inverted() @ global_matrix
-            else:
-                local_matrix = global_matrix
-            quat = local_matrix.to_quaternion()
+            # オイラー角をクォータニオンに変換して転写
+            euler = bvh_bone.rotation_euler.copy()
+            quat  = mathutils.Euler(euler, bvh_bone.rotation_mode).to_quaternion()
 
             mixamo_bone.rotation_mode       = 'QUATERNION'
             mixamo_bone.rotation_quaternion = quat
@@ -166,7 +147,6 @@ def retarget_animation(mixamo_armature, bvh_armature, frame_start: int, frame_en
                 frame=frame
             )
 
-            # Hipsは位置も転写
             if bvh_bone_name == "Hips":
                 mixamo_bone.location = bvh_bone.location.copy()
                 mixamo_bone.keyframe_insert(data_path="location", frame=frame)
@@ -175,26 +155,20 @@ def retarget_animation(mixamo_armature, bvh_armature, frame_start: int, frame_en
             print(f"\r転写中: {frame}/{frame_end}", end="")
 
     print(f"\n[OK] アニメーション転写完了")
-    
+
 def remove_bvh_armature(bvh_armature):
-    """BVHアーマチュアを削除"""
     bpy.ops.object.select_all(action='DESELECT')
     bvh_armature.select_set(True)
-
-    # BVHに関連するメッシュも削除
     for obj in bpy.data.objects:
         if obj.type == 'MESH' and obj.parent == bvh_armature:
             obj.select_set(True)
-
     bpy.ops.object.delete()
     print("[OK] BVHアーマチュアを削除")
 
 def export_fbx(output_path: str):
-    """アニメーションつきFBXを出力"""
     abs_path = os.path.abspath(output_path)
     os.makedirs(os.path.dirname(abs_path), exist_ok=True)
 
-    # Mixamoアーマチュアと関連メッシュのみ選択
     bpy.ops.object.select_all(action='DESELECT')
     for obj in bpy.data.objects:
         if obj.type in ('ARMATURE', 'MESH'):
@@ -231,11 +205,9 @@ def main():
         return
 
     frame_start, frame_end = get_frame_range(bvh_armature)
-    debug_bvh_animation(bvh_armature, frame_start, frame_end)
 
     retarget_animation(mixamo_armature, bvh_armature, frame_start, frame_end)
 
-    # BVHアーマチュアを削除してからFBX出力
     remove_bvh_armature(bvh_armature)
 
     export_fbx(OUTPUT_FBX_PATH)

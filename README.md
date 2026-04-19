@@ -1,28 +1,11 @@
-# MCAI
+# MCAI(MotionCaputureAI)
 
-※自作AIです。完成まではpythonで作成、スピードを要するならC++に順次移行
-- マーカーレスモーションキャプチャーのAIを作成
+※自作AIです。
 
-## 進捗
-- 2026/4/17 土台作り、環境構築
-- 2026/4/18   :
-  - 画像から頂点を取得
-  - VBHファイル出力
-  - オイラー回転適用
-  - movie対応
-  - Animation出力→VBH
-  - mixsamoRig
-    - FBX読み込み→不可
-    - blender経由、FBX読み込み→可
-  - スケール適用、リターゲット
-  - VBHからFBX変換
-  - いったんむりくり完成
+- モーションキャプチャー（マーカーレス）AI
+  - 画像や動画をinputして、指定のrigに位置情報をリターゲットして、Animation情報を出力
 
 ## 課題
-- 最重要
-  - VBHの位置のmappingの挙動
-
-- 時間あれば
   - FBX読み込み、吐出しの強化(blenderを参考に)
   - MotionCaptureの機械学習
 
@@ -93,8 +76,6 @@ conda install -c conda-forge assimp
 
 
 # Directory
-
-- ざっくりこんな感じ
 
 ```
 
