@@ -12,10 +12,12 @@ class MixamoConverter:
         "Neck":          ("MID_SHOULDER",   "MID_EAR"),
         "Head":          ("MID_EAR",        "NOSE"),
 
+        "LeftShoulder":  ("MID_SHOULDER", None),  # ← 追加
         "LeftArm":       ("LEFT_SHOULDER",  "LEFT_ELBOW"),
         "LeftForeArm":   ("LEFT_ELBOW",     "LEFT_WRIST"),
         "LeftHand":      ("LEFT_WRIST",     "LEFT_INDEX"),
-
+        
+        "RightShoulder": ("MID_SHOULDER", None),  # ← 追加
         "RightArm":      ("RIGHT_SHOULDER", "RIGHT_ELBOW"),
         "RightForeArm":  ("RIGHT_ELBOW",    "RIGHT_WRIST"),
         "RightHand":     ("RIGHT_WRIST",    "RIGHT_INDEX"),
@@ -38,9 +40,11 @@ class MixamoConverter:
         "Spine2":       ("MID_SHOULDER",   None),
         "Neck":         ("MID_SHOULDER",   None),
         "Head":         ("MID_EAR",        None),
+        "LeftShoulder": ("MID_SHOULDER",   None),  # ← 追加
         "LeftArm":      ("LEFT_SHOULDER",  None),
         "LeftForeArm":  ("LEFT_ELBOW",     None),
         "LeftHand":     ("LEFT_WRIST",     None),
+        "RightShoulder":("MID_SHOULDER",   None),  # ← 追加
         "RightArm":     ("RIGHT_SHOULDER", None),
         "RightForeArm": ("RIGHT_ELBOW",    None),
         "RightHand":    ("RIGHT_WRIST",    None),
@@ -62,10 +66,12 @@ class MixamoConverter:
         "Neck":          np.array([ 0,     0.616, 0.782]),
         "Head":          np.array([ 0.147, 0.041, 0.988]),
 
+        "LeftShoulder":  np.array([-1, 0, 0]),  # ← 追加
         "LeftArm":       np.array([ 1,  0,  0]),  # ← 正のX方向に変更
         "LeftForeArm":   np.array([ 1,  0,  0]),
         "LeftHand":      np.array([ 1,  0,  0]),
 
+        "RightShoulder": np.array([ 1, 0, 0]),  # ← 追加
         "RightArm":      np.array([-1,  0,  0]),  # ← 負のX方向に変更
         "RightForeArm":  np.array([-1,  0,  0]),
         "RightHand":     np.array([-1,  0,  0]),

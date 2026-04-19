@@ -11,8 +11,8 @@ class BVHExporter:
         "Hips",
         "Spine", "Spine1", "Spine2",
         "Neck", "Head",
-        "LeftArm", "LeftForeArm", "LeftHand",
-        "RightArm", "RightForeArm", "RightHand",
+        "LeftShoulder", "LeftArm", "LeftForeArm", "LeftHand",    # ← 追加
+        "RightShoulder", "RightArm", "RightForeArm", "RightHand", # ← 追加
         "LeftUpLeg", "LeftLeg", "LeftFoot", "LeftToeBase",
         "RightUpLeg", "RightLeg", "RightFoot", "RightToeBase",
     ]
@@ -21,128 +21,137 @@ class BVHExporter:
         self.frame_rate = frame_rate
 
     def _build_hierarchy_text(self) -> str:
-        """BVHのHIERARCHYセクションを生成（ハードコード）"""
         return """HIERARCHY
-ROOT Hips
-{
-\tOFFSET 0.00 0.00 0.00
-\tCHANNELS 6 Xposition Yposition Zposition Zrotation Xrotation Yrotation
-\tJOINT Spine
-\t{
-\t\tOFFSET 0.00 10.00 0.00
-\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\tJOINT Spine1
-\t\t{
-\t\t\tOFFSET 0.00 10.00 0.00
-\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\tJOINT Spine2
-\t\t\t{
-\t\t\t\tOFFSET 0.00 10.00 0.00
-\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\t\tJOINT Neck
-\t\t\t\t{
-\t\t\t\t\tOFFSET 0.00 10.00 0.00
-\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\t\t\tJOINT Head
-\t\t\t\t\t{
-\t\t\t\t\t\tOFFSET 0.00 10.00 0.00
-\t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\t\t\t\tEnd Site
-\t\t\t\t\t\t{
-\t\t\t\t\t\t\tOFFSET 0.00 10.00 0.00
-\t\t\t\t\t\t}
-\t\t\t\t\t}
-\t\t\t\t}
-\t\t\t\tJOINT LeftArm
-\t\t\t\t{
-\t\t\t\t\tOFFSET 15.00 0.00 0.00
-\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\t\t\tJOINT LeftForeArm
-\t\t\t\t\t{
-\t\t\t\t\t\tOFFSET 25.00 0.00 0.00
-\t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\t\t\t\tJOINT LeftHand
-\t\t\t\t\t\t{
-\t\t\t\t\t\t\tOFFSET 20.00 0.00 0.00
-\t\t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\t\t\t\t\tEnd Site
-\t\t\t\t\t\t\t{
-\t\t\t\t\t\t\t\tOFFSET 10.00 0.00 0.00
-\t\t\t\t\t\t\t}
-\t\t\t\t\t\t}
-\t\t\t\t\t}
-\t\t\t\t}
-\t\t\t\tJOINT RightArm
-\t\t\t\t{
-\t\t\t\t\tOFFSET -15.00 0.00 0.00
-\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\t\t\tJOINT RightForeArm
-\t\t\t\t\t{
-\t\t\t\t\t\tOFFSET -25.00 0.00 0.00
-\t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\t\t\t\tJOINT RightHand
-\t\t\t\t\t\t{
-\t\t\t\t\t\t\tOFFSET -20.00 0.00 0.00
-\t\t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\t\t\t\t\tEnd Site
-\t\t\t\t\t\t\t{
-\t\t\t\t\t\t\t\tOFFSET -10.00 0.00 0.00
-\t\t\t\t\t\t\t}
-\t\t\t\t\t\t}
-\t\t\t\t\t}
-\t\t\t\t}
-\t\t\t}
-\t\t}
-\t}
-\tJOINT LeftUpLeg
-\t{
-\t\tOFFSET 8.00 -15.00 0.00
-\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\tJOINT LeftLeg
-\t\t{
-\t\t\tOFFSET 0.00 -35.00 0.00
-\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\tJOINT LeftFoot
-\t\t\t{
-\t\t\t\tOFFSET 0.00 -35.00 0.00
-\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\t\tJOINT LeftToeBase
-\t\t\t\t{
-\t\t\t\t\tOFFSET 0.00 -5.00 10.00
-\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\t\t\tEnd Site
-\t\t\t\t\t{
-\t\t\t\t\t\tOFFSET 0.00 -5.00 10.00
-\t\t\t\t\t}
-\t\t\t\t}
-\t\t\t}
-\t\t}
-\t}
-\tJOINT RightUpLeg
-\t{
-\t\tOFFSET -8.00 -15.00 0.00
-\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\tJOINT RightLeg
-\t\t{
-\t\t\tOFFSET 0.00 -35.00 0.00
-\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\tJOINT RightFoot
-\t\t\t{
-\t\t\t\tOFFSET 0.00 -35.00 0.00
-\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\t\tJOINT RightToeBase
-\t\t\t\t{
-\t\t\t\t\tOFFSET 0.00 -5.00 10.00
-\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
-\t\t\t\t\tEnd Site
-\t\t\t\t\t{
-\t\t\t\t\t\tOFFSET 0.00 -5.00 10.00
-\t\t\t\t\t}
-\t\t\t\t}
-\t\t\t}
-\t\t}
-\t}
-}"""
+    ROOT Hips
+    {
+    \tOFFSET 0.00 0.00 0.00
+    \tCHANNELS 6 Xposition Yposition Zposition Zrotation Xrotation Yrotation
+    \tJOINT Spine
+    \t{
+    \t\tOFFSET 0.00 10.00 0.00
+    \t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\tJOINT Spine1
+    \t\t{
+    \t\t\tOFFSET 0.00 10.00 0.00
+    \t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\tJOINT Spine2
+    \t\t\t{
+    \t\t\t\tOFFSET 0.00 10.00 0.00
+    \t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\tJOINT Neck
+    \t\t\t\t{
+    \t\t\t\t\tOFFSET 0.00 10.00 0.00
+    \t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\t\tJOINT Head
+    \t\t\t\t\t{
+    \t\t\t\t\t\tOFFSET 0.00 10.00 0.00
+    \t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\t\t\tEnd Site
+    \t\t\t\t\t\t{
+    \t\t\t\t\t\t\tOFFSET 0.00 10.00 0.00
+    \t\t\t\t\t\t}
+    \t\t\t\t\t}
+    \t\t\t\t}
+    \t\t\t\tJOINT LeftShoulder
+    \t\t\t\t{
+    \t\t\t\t\tOFFSET 8.86 0.00 0.00
+    \t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\t\tJOINT LeftArm
+    \t\t\t\t\t{
+    \t\t\t\t\t\tOFFSET 15.00 0.00 0.00
+    \t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\t\t\tJOINT LeftForeArm
+    \t\t\t\t\t\t{
+    \t\t\t\t\t\t\tOFFSET 25.00 0.00 0.00
+    \t\t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\t\t\t\tJOINT LeftHand
+    \t\t\t\t\t\t\t{
+    \t\t\t\t\t\t\t\tOFFSET 20.00 0.00 0.00
+    \t\t\t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\t\t\t\t\tEnd Site
+    \t\t\t\t\t\t\t\t{
+    \t\t\t\t\t\t\t\t\tOFFSET 10.00 0.00 0.00
+    \t\t\t\t\t\t\t\t}
+    \t\t\t\t\t\t\t}
+    \t\t\t\t\t\t}
+    \t\t\t\t\t}
+    \t\t\t\t}
+    \t\t\t\tJOINT RightShoulder
+    \t\t\t\t{
+    \t\t\t\t\tOFFSET -8.86 0.00 0.00
+    \t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\t\tJOINT RightArm
+    \t\t\t\t\t{
+    \t\t\t\t\t\tOFFSET -15.00 0.00 0.00
+    \t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\t\t\tJOINT RightForeArm
+    \t\t\t\t\t\t{
+    \t\t\t\t\t\t\tOFFSET -25.00 0.00 0.00
+    \t\t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\t\t\t\tJOINT RightHand
+    \t\t\t\t\t\t\t{
+    \t\t\t\t\t\t\t\tOFFSET -20.00 0.00 0.00
+    \t\t\t\t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\t\t\t\t\tEnd Site
+    \t\t\t\t\t\t\t\t{
+    \t\t\t\t\t\t\t\t\tOFFSET -10.00 0.00 0.00
+    \t\t\t\t\t\t\t\t}
+    \t\t\t\t\t\t\t}
+    \t\t\t\t\t\t}
+    \t\t\t\t\t}
+    \t\t\t\t}
+    \t\t\t}
+    \t\t}
+    \t}
+    \tJOINT LeftUpLeg
+    \t{
+    \t\tOFFSET 8.00 -15.00 0.00
+    \t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\tJOINT LeftLeg
+    \t\t{
+    \t\t\tOFFSET 0.00 -35.00 0.00
+    \t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\tJOINT LeftFoot
+    \t\t\t{
+    \t\t\t\tOFFSET 0.00 -35.00 0.00
+    \t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\tJOINT LeftToeBase
+    \t\t\t\t{
+    \t\t\t\t\tOFFSET 0.00 -5.00 10.00
+    \t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\t\tEnd Site
+    \t\t\t\t\t{
+    \t\t\t\t\t\tOFFSET 0.00 -5.00 10.00
+    \t\t\t\t\t}
+    \t\t\t\t}
+    \t\t\t}
+    \t\t}
+    \t}
+    \tJOINT RightUpLeg
+    \t{
+    \t\tOFFSET -8.00 -15.00 0.00
+    \t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\tJOINT RightLeg
+    \t\t{
+    \t\t\tOFFSET 0.00 -35.00 0.00
+    \t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\tJOINT RightFoot
+    \t\t\t{
+    \t\t\t\tOFFSET 0.00 -35.00 0.00
+    \t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\tJOINT RightToeBase
+    \t\t\t\t{
+    \t\t\t\t\tOFFSET 0.00 -5.00 10.00
+    \t\t\t\t\tCHANNELS 3 Zrotation Xrotation Yrotation
+    \t\t\t\t\tEnd Site
+    \t\t\t\t\t{
+    \t\t\t\t\t\tOFFSET 0.00 -5.00 10.00
+    \t\t\t\t\t}
+    \t\t\t\t}
+    \t\t\t}
+    \t\t}
+    \t}
+    }"""
 
     def _build_motion_text(self, frames: list[dict]) -> str:
         """BVHのMOTIONセクションを生成"""

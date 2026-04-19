@@ -87,9 +87,11 @@ def retarget_animation(mixamo_armature, bvh_armature, frame_start: int, frame_en
         "Spine2":       "mixamorig:Spine2",
         "Neck":         "mixamorig:Neck",
         "Head":         "mixamorig:Head",
+        "LeftShoulder":  "mixamorig:LeftShoulder",   # ← 追加
         "LeftArm":      "mixamorig:LeftArm",
         "LeftForeArm":  "mixamorig:LeftForeArm",
         "LeftHand":     "mixamorig:LeftHand",
+        "RightShoulder": "mixamorig:RightShoulder",  # ← 追加
         "RightArm":     "mixamorig:RightArm",
         "RightForeArm": "mixamorig:RightForeArm",
         "RightHand":    "mixamorig:RightHand",
@@ -103,12 +105,6 @@ def retarget_animation(mixamo_armature, bvh_armature, frame_start: int, frame_en
         "RightToeBase": "mixamorig:RightToeBase",
     }
 
-    # 腕のみX軸180度補正が必要なボーン
-    ARM_BONES = {
-        "LeftArm", "LeftForeArm", "LeftHand",
-        "RightArm", "RightForeArm", "RightHand",
-    }
-
     bpy.context.scene.frame_start = frame_start
     bpy.context.scene.frame_end   = frame_end
 
@@ -118,22 +114,6 @@ def retarget_animation(mixamo_armature, bvh_armature, frame_start: int, frame_en
     mixamo_armature.animation_data.action = new_action
 
     print(f"\n[INFO] アニメーション転写開始: {frame_end - frame_start + 1}フレーム")
-
-    # フレーム1のデバッグ出力
-    bpy.context.scene.frame_set(frame_start)
-    bpy.context.view_layer.update()
-    print("\n=== フレーム1 転写確認 ===")
-    for bvh_name in ["Hips", "Spine", "LeftArm", "LeftUpLeg"]:
-        mixamo_name = BONE_MAP.get(bvh_name)
-        bvh_bone    = bvh_armature.pose.bones.get(bvh_name)
-        mixamo_bone = mixamo_armature.pose.bones.get(mixamo_name)
-        if bvh_bone and mixamo_bone:
-            euler = bvh_bone.rotation_euler.copy()
-            quat  = mathutils.Euler(euler, bvh_bone.rotation_mode).to_quaternion()
-            print(f"  {bvh_name}: euler={[round(v*57.3,2) for v in euler]} quat={[round(v,3) for v in quat]}")
-
-    # X軸180度補正クォータニオン
-    correction_x180 = mathutils.Quaternion((1, 0, 0), math.pi)  # ← mathutils.pi → math.pi
 
     for frame in range(frame_start, frame_end + 1):
         bpy.context.scene.frame_set(frame)
@@ -149,17 +129,12 @@ def retarget_animation(mixamo_armature, bvh_armature, frame_start: int, frame_en
             euler = bvh_bone.rotation_euler.copy()
             quat  = mathutils.Euler(euler, bvh_bone.rotation_mode).to_quaternion()
 
-            # 腕のみX軸180度補正を適用
-            if bvh_bone_name in ARM_BONES:
-                quat = correction_x180 @ quat
-
-            mixamo_bone.rotation_mode       = 'QUATERNION'
-            mixamo_bone.rotation_quaternion = quat
+            mixamo_bone.rotation_mode = 'ZXY'  # ← QUATERNIONからZXYに変更
+            mixamo_bone.rotation_euler = bvh_bone.rotation_euler.copy()  # ← そのままコピー
             mixamo_bone.keyframe_insert(
-                data_path="rotation_quaternion",
+                data_path="rotation_euler",  # ← rotation_quaternionからrotation_eulerに変更
                 frame=frame
             )
-
             if bvh_bone_name == "Hips":
                 mixamo_bone.location = bvh_bone.location.copy()
                 mixamo_bone.keyframe_insert(data_path="location", frame=frame)
@@ -168,7 +143,6 @@ def retarget_animation(mixamo_armature, bvh_armature, frame_start: int, frame_en
             print(f"\r転写中: {frame}/{frame_end}", end="")
 
     print(f"\n[OK] アニメーション転写完了")
-
 def remove_bvh_armature(bvh_armature):
     bpy.ops.object.select_all(action='DESELECT')
     bvh_armature.select_set(True)
@@ -198,7 +172,8 @@ def export_fbx(output_path: str):
         bake_anim_step=1.0,
         add_leaf_bones=False,
         axis_forward='-Z',
-        axis_up='Y'
+        axis_up='Y',
+        bake_anim_simplify_factor=0.0,  # ← 追加：簡略化なし
     )
     print(f"[OK] FBX出力: {abs_path}")
     
