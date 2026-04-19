@@ -1,8 +1,7 @@
 """
 Blenderをバックグラウンドで実行してFBXのボーン長さをJSONで出力
 実行方法:
-& "C:\Program Files\Blender Foundation\Blender 4.5\blender.exe" --background --python "C:\Users\naoki\MyProject\SourceCode\repos_vscode\MCAI\blender_fbx_to_bone_lengths.py"
-Blender 4.5.1 LTS (h
+& "C:\Program Files\Blender Foundation\Blender 4.5\blender.exe" --background --python blender_fbx_to_bone_lengths.py
 """
 import bpy
 import json

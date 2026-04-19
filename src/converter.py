@@ -55,20 +55,20 @@ class MixamoConverter:
     }
 
     BIND_POSE = {
-        "Hips":          np.array([-1,     0,     0    ]),
+        "Hips":          np.array([ 1,     0,     0    ]),  # ← 正のX方向に変更
         "Spine":         np.array([ 0,     1,     0    ]),
         "Spine1":        np.array([ 0,     1,     0    ]),
         "Spine2":        np.array([ 0,     1,     0    ]),
-        "Neck":          np.array([ 0,     0.616, 0.782]),  # ← 実測値
-        "Head":          np.array([ 0.147, 0.041, 0.988]),  # ← 実測値
+        "Neck":          np.array([ 0,     0.616, 0.782]),
+        "Head":          np.array([ 0.147, 0.041, 0.988]),
 
-        "LeftArm":       np.array([-1,  0,  0]),
-        "LeftForeArm":   np.array([-1,  0,  0]),
-        "LeftHand":      np.array([-1,  0,  0]),
+        "LeftArm":       np.array([ 1,  0,  0]),  # ← 正のX方向に変更
+        "LeftForeArm":   np.array([ 1,  0,  0]),
+        "LeftHand":      np.array([ 1,  0,  0]),
 
-        "RightArm":      np.array([ 1,  0,  0]),
-        "RightForeArm":  np.array([ 1,  0,  0]),
-        "RightHand":     np.array([ 1,  0,  0]),
+        "RightArm":      np.array([-1,  0,  0]),  # ← 負のX方向に変更
+        "RightForeArm":  np.array([-1,  0,  0]),
+        "RightHand":     np.array([-1,  0,  0]),
 
         "LeftUpLeg":     np.array([ 0, -1,  0]),
         "LeftLeg":       np.array([ 0, -1,  0]),
@@ -90,7 +90,8 @@ class MixamoConverter:
         lm = landmarks.get(name)
         if lm is None:
             return np.zeros(3)
-        return np.array([-lm.x, -lm.y, -lm.z])
+        # X反転をやめてZ軸のみ反転（奥行きの座標系変換）
+        return np.array([lm.x, -lm.y, -lm.z])
 
     def _build_virtual_landmarks(self, lm_dict: dict) -> dict:
         """中点などの仮想ランドマークを追加"""
